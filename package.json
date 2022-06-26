@@ -1,0 +1,21 @@
+{
+  "name": "swap",
+  "version": "1.0.0",
+  "main": "swap.ts",
+  "scripts": {
+    "start": "tsc && node dist/swap.js",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/swap.ts"
+  },
+  "devDependencies": {
+    "@solana/spl-token": "0.1.8",
+    "@typescript-eslint/eslint-plugin": "^5.29.0",
+    "@typescript-eslint/parser": "^5.29.0",
+    "nodemon": "^2.0.18",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@solana/spl-token-swap": "^0.1.4",
+    "@solana/web3.js": "^1.44.2"
+  }
+}
