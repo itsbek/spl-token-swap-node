@@ -7,12 +7,7 @@ import {
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import {
-  TokenSwap,
-  Numberu64,
-  CurveType,
-  OLD_TOKEN_SWAP_PROGRAM_ID as TOKEN_SWAP_PROGRAM_ID,
-} from '@solana/spl-token-swap';
+import { TokenSwap, Numberu64, CurveType } from '@solana/spl-token-swap';
 import { newAccountWithLamports } from './util/new-account-with-lamports';
 
 // The following globals are created by `createTokenSwap` and used by subsequent tests
@@ -35,9 +30,9 @@ let tokenAccountA: PublicKey;
 let tokenAccountB: PublicKey;
 
 // TOKEN_SWAP_PROGRAM_ID
-// const TOKEN_SWAP_PROGRAM_ID: PublicKey = new PublicKey(
-//   'SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8'
-// );
+const TOKEN_SWAP_PROGRAM_ID: PublicKey = new PublicKey(
+  'SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8'
+);
 // const TOKEN_SWAP_PROGRAM_ID: PublicKey = new PublicKey(
 //   'SwapsVeCiPHMUAtzQWZw7RjsKjgCjhwU55QGu4U1Szw'
 // );
@@ -99,7 +94,7 @@ async function getConnection(): Promise<Connection> {
 
 async function createTokenSwap(
   curveType: number,
-  curveParameters?: Numberu64
+  curveParameters?: Numberu64 | undefined
 ): Promise<void> {
   const connection = await getConnection();
   const payer = await newAccountWithLamports(connection, 1000000000);
@@ -199,32 +194,32 @@ async function createTokenSwap(
   assert(fetchedTokenSwap.mintB.equals(mintB.publicKey));
   assert(fetchedTokenSwap.poolToken.equals(tokenPool.publicKey));
   assert(fetchedTokenSwap.feeAccount.equals(feeAccount));
-  // assert(
-  //   TRADING_FEE_NUMERATOR == fetchedTokenSwap.tradeFeeNumerator.toNumber()
-  // );
-  // assert(
-  //   TRADING_FEE_DENOMINATOR == fetchedTokenSwap.tradeFeeDenominator.toNumber()
-  // );
-  // assert(
-  //   OWNER_TRADING_FEE_NUMERATOR ==
-  //     fetchedTokenSwap.ownerTradeFeeNumerator.toNumber()
-  // );
-  // assert(
-  //   OWNER_TRADING_FEE_DENOMINATOR ==
-  //     fetchedTokenSwap.ownerTradeFeeDenominator.toNumber()
-  // );
-  // assert(
-  //   OWNER_WITHDRAW_FEE_NUMERATOR ==
-  //     fetchedTokenSwap.ownerWithdrawFeeNumerator.toNumber()
-  // );
-  // assert(
-  //   OWNER_WITHDRAW_FEE_DENOMINATOR ==
-  //     fetchedTokenSwap.ownerWithdrawFeeDenominator.toNumber()
-  // );
-  // assert(HOST_FEE_NUMERATOR == fetchedTokenSwap.hostFeeNumerator.toNumber());
-  // assert(
-  //   HOST_FEE_DENOMINATOR == fetchedTokenSwap.hostFeeDenominator.toNumber()
-  // );
+  assert(
+    TRADING_FEE_NUMERATOR == fetchedTokenSwap.tradeFeeNumerator.toNumber()
+  );
+  assert(
+    TRADING_FEE_DENOMINATOR == fetchedTokenSwap.tradeFeeDenominator.toNumber()
+  );
+  assert(
+    OWNER_TRADING_FEE_NUMERATOR ==
+      fetchedTokenSwap.ownerTradeFeeNumerator.toNumber()
+  );
+  assert(
+    OWNER_TRADING_FEE_DENOMINATOR ==
+      fetchedTokenSwap.ownerTradeFeeDenominator.toNumber()
+  );
+  assert(
+    OWNER_WITHDRAW_FEE_NUMERATOR ==
+      fetchedTokenSwap.ownerWithdrawFeeNumerator.toNumber()
+  );
+  assert(
+    OWNER_WITHDRAW_FEE_DENOMINATOR ==
+      fetchedTokenSwap.ownerWithdrawFeeDenominator.toNumber()
+  );
+  assert(HOST_FEE_NUMERATOR == fetchedTokenSwap.hostFeeNumerator.toNumber());
+  assert(
+    HOST_FEE_DENOMINATOR == fetchedTokenSwap.hostFeeDenominator.toNumber()
+  );
   assert(curveType == fetchedTokenSwap.curveType);
 }
 
