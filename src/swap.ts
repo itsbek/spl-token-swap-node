@@ -1,14 +1,8 @@
-import {
-  Account,
-  Connection,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-  sendAndConfirmTransaction,
-} from '@solana/web3.js';
+import { Account, Connection, PublicKey } from '@solana/web3.js';
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { TokenSwap, Numberu64, CurveType } from '@solana/spl-token-swap';
 import { newAccountWithLamports } from './util/new-account-with-lamports';
+import { sleep } from './util/sleep';
 
 // The following globals are created by `createTokenSwap` and used by subsequent tests
 // Token swap
@@ -30,12 +24,12 @@ let tokenAccountA: PublicKey;
 let tokenAccountB: PublicKey;
 
 // TOKEN_SWAP_PROGRAM_ID
-const TOKEN_SWAP_PROGRAM_ID: PublicKey = new PublicKey(
-  'SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8'
-);
 // const TOKEN_SWAP_PROGRAM_ID: PublicKey = new PublicKey(
-//   'SwapsVeCiPHMUAtzQWZw7RjsKjgCjhwU55QGu4U1Szw'
+//   'SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8'
 // );
+const TOKEN_SWAP_PROGRAM_ID: PublicKey = new PublicKey(
+  'SwapsVeCiPHMUAtzQWZw7RjsKjgCjhwU55QGu4U1Szw'
+);
 
 // Hard-coded fee address, for testing production mode
 const SWAP_PROGRAM_OWNER_FEE_ADDRESS =
@@ -77,14 +71,16 @@ function assert(condition: boolean, message?: string) {
     console.log(Error().stack + ':token-test.js');
     throw message || 'Assertion failed';
   }
+  console.log('assertion success:', condition);
 }
 
 let connection: Connection;
 async function getConnection(): Promise<Connection> {
   if (connection) return connection;
 
-  const url = 'http://localhost:8899';
-  // const url = 'https://api.devnet.solana.com';
+  // const url = 'http://localhost:8899';
+  const url = 'https://api.devnet.solana.com';
+  // const url = 'https://devnet.genesysgo.net/';
   connection = new Connection(url, 'recent');
   const version = await connection.getVersion();
 
@@ -92,7 +88,7 @@ async function getConnection(): Promise<Connection> {
   return connection;
 }
 
-async function createTokenSwap(
+export async function createTokenSwap(
   curveType: number,
   curveParameters?: Numberu64 | undefined
 ): Promise<void> {
@@ -152,7 +148,7 @@ async function createTokenSwap(
   await mintB.mintTo(tokenAccountB, owner, [], currentSwapTokenB);
 
   console.log('creating token swap');
-  const swapPayer = await newAccountWithLamports(connection, 10000000000);
+  const swapPayer = await newAccountWithLamports(connection, 1000000000);
   tokenSwap = await TokenSwap.createTokenSwap(
     connection,
     swapPayer,
@@ -223,4 +219,69 @@ async function createTokenSwap(
   assert(curveType == fetchedTokenSwap.curveType);
 }
 
-createTokenSwap(0);
+export async function swap(): Promise<void> {
+  console.log('Creating swap token a account');
+  let userAccountA = await mintA.createAccount(owner.publicKey);
+  await mintA.mintTo(userAccountA, owner, [], SWAP_AMOUNT_IN);
+  const userTransferAuthority = new Account();
+  await mintA.approve(
+    userAccountA,
+    userTransferAuthority.publicKey,
+    owner,
+    [],
+    SWAP_AMOUNT_IN
+  );
+  console.log('Creating swap token b account');
+  let userAccountB = await mintB.createAccount(owner.publicKey);
+  let poolAccount = SWAP_PROGRAM_OWNER_FEE_ADDRESS
+    ? await tokenPool.createAccount(owner.publicKey)
+    : null;
+
+  const confirmOptions = {
+    skipPreflight: true,
+  };
+  console.log(confirmOptions);
+
+  console.log('Swapping');
+  await tokenSwap.swap(
+    userAccountA,
+    tokenAccountA,
+    tokenAccountB,
+    userAccountB,
+    poolAccount,
+    userTransferAuthority,
+    SWAP_AMOUNT_IN,
+    SWAP_AMOUNT_OUT,
+    confirmOptions
+  );
+
+  await sleep(5000);
+
+  let info;
+  info = await mintA.getAccountInfo(userAccountA);
+  assert(info.amount.toNumber() == 0);
+
+  info = await mintB.getAccountInfo(userAccountB);
+  assert(info.amount.toNumber() == SWAP_AMOUNT_OUT);
+
+  info = await mintA.getAccountInfo(tokenAccountA);
+  assert(info.amount.toNumber() == currentSwapTokenA + SWAP_AMOUNT_IN);
+  currentSwapTokenA += SWAP_AMOUNT_IN;
+
+  info = await mintB.getAccountInfo(tokenAccountB);
+  assert(info.amount.toNumber() == currentSwapTokenB - SWAP_AMOUNT_OUT);
+  currentSwapTokenB -= SWAP_AMOUNT_OUT;
+
+  info = await tokenPool.getAccountInfo(tokenAccountPool);
+  assert(
+    info.amount.toNumber() == DEFAULT_POOL_TOKEN_AMOUNT - POOL_TOKEN_AMOUNT
+  );
+
+  info = await tokenPool.getAccountInfo(feeAccount);
+  assert(info.amount.toNumber() == currentFeeAmount + OWNER_SWAP_FEE);
+
+  if (poolAccount != null) {
+    info = await tokenPool.getAccountInfo(poolAccount);
+    assert(info.amount.toNumber() == HOST_SWAP_FEE);
+  }
+}

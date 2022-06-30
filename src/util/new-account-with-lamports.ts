@@ -1,4 +1,4 @@
-import { Account, Connection } from '@solana/web3.js';
+import { Account, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 import { sleep } from './sleep';
 
@@ -11,7 +11,7 @@ export async function newAccountWithLamports(
   let retries = 30;
   await connection.requestAirdrop(account.publicKey, lamports);
   for (;;) {
-    await sleep(500);
+    await sleep(10000);
     if (lamports == (await connection.getBalance(account.publicKey))) {
       return account;
     }
