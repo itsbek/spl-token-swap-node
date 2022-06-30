@@ -71,7 +71,7 @@ function assert(condition: boolean, message?: string) {
     console.log(Error().stack + ':token-test.js');
     throw message || 'Assertion failed';
   }
-  console.log('assertion success:', condition);
+  // console.log('assertion success:', condition);
 }
 
 let connection: Connection;
