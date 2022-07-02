@@ -14,7 +14,7 @@ or
 
 ```npm install```
 
-I had to run solana test validator since it is targetting directly `solana-sdk`. start the following command on a separate terminal:
+I had to run solana test validator since it is targetting directly `solana-sdk` for testing on localhost/localnet(skip this if you're testing on `devnet` or `testnet`). start the following command on a separate terminal:
 
 ```solana-test-validator```
 
@@ -30,7 +30,8 @@ start the nodemon run:
 - [x]  creating token B account
 - [x]  minting token B to swap
 - [x]  creating token swap
-- [ ]  loading token swap
+- [x]  loading token swap
+- [x]  swap tokens 
 
 
 
