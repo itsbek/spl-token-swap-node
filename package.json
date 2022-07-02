@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "swap.ts",
   "scripts": {
-    "start": "tsc && node dist/swap.js",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts"
   },
   "devDependencies": {
