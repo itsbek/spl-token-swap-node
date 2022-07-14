@@ -14,9 +14,7 @@ or
 
 ```npm install```
 
-I had to run solana test validator since it is targetting directly `solana-sdk` for testing on localhost/localnet(skip this if you're testing on `devnet` or `testnet`). start the following command on a separate terminal:
-
-```solana-test-validator```
+### start the script
 
 start the nodemon run:
 ```yarn run dev```
