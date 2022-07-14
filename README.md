@@ -16,7 +16,7 @@ or
 
 ### start the script
 
-start the nodemon run:
+run:
 ```yarn run dev```
 ## Features
 
