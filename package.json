@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "swap.ts",
   "scripts": {
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts"
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/swap.ts"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

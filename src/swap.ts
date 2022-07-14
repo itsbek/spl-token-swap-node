@@ -61,35 +61,13 @@ let currentFeeAmount = 0;
 // Because there is no withdraw fee in the production version, these numbers
 // need to get slightly tweaked in the two cases.
 const SWAP_AMOUNT_IN = 100000;
-const SWAP_AMOUNT_OUT = SWAP_PROGRAM_OWNER_FEE_ADDRESS ? 90661 : 90674;
-const SWAP_FEE = SWAP_PROGRAM_OWNER_FEE_ADDRESS ? 22273 : 22277;
-const HOST_SWAP_FEE = SWAP_PROGRAM_OWNER_FEE_ADDRESS
-  ? Math.floor((SWAP_FEE * HOST_FEE_NUMERATOR) / HOST_FEE_DENOMINATOR)
-  : 0;
-const OWNER_SWAP_FEE = SWAP_FEE - HOST_SWAP_FEE;
-
-// Pool token amount minted on init
-const DEFAULT_POOL_TOKEN_AMOUNT = 1000000000;
-// Pool token amount to withdraw / deposit
-const POOL_TOKEN_AMOUNT = 10000000;
-
-function assert(condition: boolean, message?: string) {
-  if (!condition) {
-    console.log(Error().stack + ':token-test.js');
-    throw message || 'Assertion failed';
-  }
-  // console.log('assertion success:', condition);
-}
 
 let connection: Connection;
 async function getConnection(): Promise<Connection> {
   if (connection) return connection;
 
-  // const url = 'http://localhost:8899';
   const url = 'https://api.devnet.solana.com';
 
-  // private rpc wont airdrop tokens?
-  // const url = 'https://devnet.genesysgo.net/';
   connection = new Connection(url, 'recent');
   const version = await connection.getVersion();
 
@@ -106,6 +84,7 @@ export async function createTokenSwap(
   owner = await newAccountWithLamports(connection, 1000000000);
   const tokenSwapAccount = new Account();
 
+  // tokenSwap PDA
   [authority, bumpSeed] = await PublicKey.findProgramAddress(
     [tokenSwapAccount.publicKey.toBuffer()],
     TOKEN_SWAP_PROGRAM_ID
@@ -192,43 +171,6 @@ export async function createTokenSwap(
     swapPayer
   );
 
-  assert(fetchedTokenSwap.tokenProgramId.equals(TOKEN_PROGRAM_ID));
-  assert(fetchedTokenSwap.tokenAccountA.equals(tokenAccountA));
-  assert(fetchedTokenSwap.tokenAccountB.equals(tokenAccountB));
-  assert(fetchedTokenSwap.mintA.equals(mintA.publicKey));
-  assert(fetchedTokenSwap.mintB.equals(mintB.publicKey));
-  assert(fetchedTokenSwap.poolToken.equals(tokenPool.publicKey));
-  assert(fetchedTokenSwap.feeAccount.equals(feeAccount));
-  assert(
-    TRADING_FEE_NUMERATOR == fetchedTokenSwap.tradeFeeNumerator.toNumber()
-  );
-  assert(
-    TRADING_FEE_DENOMINATOR == fetchedTokenSwap.tradeFeeDenominator.toNumber()
-  );
-  assert(
-    OWNER_TRADING_FEE_NUMERATOR ==
-      fetchedTokenSwap.ownerTradeFeeNumerator.toNumber()
-  );
-  assert(
-    OWNER_TRADING_FEE_DENOMINATOR ==
-      fetchedTokenSwap.ownerTradeFeeDenominator.toNumber()
-  );
-  assert(
-    OWNER_WITHDRAW_FEE_NUMERATOR ==
-      fetchedTokenSwap.ownerWithdrawFeeNumerator.toNumber()
-  );
-  assert(
-    OWNER_WITHDRAW_FEE_DENOMINATOR ==
-      fetchedTokenSwap.ownerWithdrawFeeDenominator.toNumber()
-  );
-  assert(HOST_FEE_NUMERATOR == fetchedTokenSwap.hostFeeNumerator.toNumber());
-  assert(
-    HOST_FEE_DENOMINATOR == fetchedTokenSwap.hostFeeDenominator.toNumber()
-  );
-  assert(curveType == fetchedTokenSwap.curveType);
-}
-
-export async function createAccountAndSwapAtomic(): Promise<void> {
   console.log('Creating swap token a account');
   let userAccountA = await mintA.createAccount(owner.publicKey);
   await mintA.mintTo(userAccountA, owner, [], SWAP_AMOUNT_IN);
@@ -304,10 +246,6 @@ export async function createAccountAndSwapAtomic(): Promise<void> {
   console.log(`https://solscan.io/tx/${txid}`);
   console.log(`or \n`);
   console.log(`https://explorer.solana.com/tx/${txid}`);
-
-  let info;
-  info = await mintA.getAccountInfo(tokenAccountA);
-  currentSwapTokenA = info.amount.toNumber();
-  info = await mintB.getAccountInfo(tokenAccountB);
-  currentSwapTokenB = info.amount.toNumber();
 }
+
+createTokenSwap(0);
